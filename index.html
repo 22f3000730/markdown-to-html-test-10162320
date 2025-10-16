@@ -5,15 +5,71 @@
   <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/highlight.js/lib/index.js"></script>
   <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/highlight.js/styles/default.css">
+  <style>
+    #markdown-tabs button {
+      padding: 8px 16px;
+      margin-right: 5px;
+      border: 1px solid #ccc;
+      background-color: #f0f0f0;
+      cursor: pointer;
+    }
+    
+    #markdown-tabs button.active {
+      background-color: #007bff;
+      color: white;
+      border-color: #007bff;
+    }
+    
+    #markdown-output, #markdown-source {
+      padding: 15px;
+      border: 1px solid #ddd;
+      min-height: 200px;
+      margin-top: 10px;
+      white-space: pre-wrap;
+    }
+    
+    #markdown-source {
+      display: none;
+    }
+  </style>
 </head>
 <body>
+  <div id="markdown-tabs">
+    <button id="preview-tab" class="active" onclick="switchTab('preview')">Preview</button>
+    <button id="source-tab" onclick="switchTab('source')">Source</button>
+  </div>
+  
   <div id="markdown-output"></div>
+  <div id="markdown-source"></div>
   
   <script>
+    let currentMarkdown = '';
+    
+    function switchTab(tab) {
+      const previewTab = document.getElementById('preview-tab');
+      const sourceTab = document.getElementById('source-tab');
+      const previewPane = document.getElementById('markdown-output');
+      const sourcePane = document.getElementById('markdown-source');
+      
+      if (tab === 'preview') {
+        previewTab.classList.add('active');
+        sourceTab.classList.remove('active');
+        previewPane.style.display = 'block';
+        sourcePane.style.display = 'none';
+      } else {
+        previewTab.classList.remove('active');
+        sourceTab.classList.add('active');
+        previewPane.style.display = 'none';
+        sourcePane.style.display = 'block';
+      }
+    }
+    
     // Fetch and process the markdown file
     fetch('data:text/markdown;base64,aGVsbG8KIyBUaXRsZQ==')
       .then(response => response.text())
       .then(markdownText => {
+        currentMarkdown = markdownText;
+        
         // Configure marked with highlight.js
         marked.setOptions({
           highlight: function(code, lang) {
@@ -28,10 +84,12 @@
         // Convert markdown to HTML and render
         const html = marked.parse(markdownText);
         document.getElementById('markdown-output').innerHTML = html;
+        document.getElementById('markdown-source').textContent = markdownText;
       })
       .catch(error => {
         console.error('Error processing markdown:', error);
         document.getElementById('markdown-output').innerHTML = 'Error loading content';
+        document.getElementById('markdown-source').textContent = 'Error loading content';
       });
   </script>
 </body>
